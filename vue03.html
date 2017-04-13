@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="vue.js"></script>
+    <script>
+        window.onload = function () {
+            new Vue({
+                el:"#box",
+                data:{
+                    msg:"hello,world",
+                    json:{a:'apple',b:'banana',c:'orange'},
+                    json2:{car:"bj2024",phone:"iPhone7",computer:"Mac Book Pro"}
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<div id="box">
+    <input type="text" v-model="msg">
+    <br>
+    <input type="text" v-model="msg">
+    {{msg}}
+</div>
+
+</body>
+</html>
