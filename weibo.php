@@ -1,8 +1,8 @@
 <?php
 /*
 **********************************************
-	Author:	blue@zhinengshe.com
-	Date:	2012-4-5
+	Author:	
+	Date:	2015-4-5
 
 	usage:
 			weibo.php?act=add&content=xxx	添加一条
@@ -14,18 +14,21 @@
 			weibo.php?act=get&page=1		获取一页数据
 				返回：[{id: ID, content: "内容", time: 时间戳, acc: 顶次数, ref: 踩次数}, {...}, ...]
 			
-			weibo.php?act=acc&id=12			顶某一条数据
+			weibo.php?act=acc&id=num			顶某一条数据
 				返回：{error:0}
 			
-			weibo.php?act=ref&id=12			踩某一条数据
+			weibo.php?act=ref&id=num			踩某一条数据
+				返回：{error:0}
+				
+			weibo.php?act=del&id=num			删除某一条数据
 				返回：{error:0}
 	
-	注意：	服务器所返回的时间戳都是秒（JS是毫秒）
+	注意：	服务器所间戳都返回的时是秒（JS是毫秒）
 **********************************************
 */
 
 //创建数据库之类的
-$db=@mysql_connect('localhost', 'root', 'admin123') or @mysql_connect('localhost', 'root', 'admin');
+$db=@mysql_connect('localhost', 'root', '') or @mysql_connect('localhost', 'root', 'admin');
 
 mysql_query("set names 'utf8'");
 mysql_query('CREATE DATABASE zns_ajax');
@@ -39,14 +42,14 @@ CREATE TABLE  `zns_ajax`.`weibo` (
 `time` INT NOT NULL ,
 `acc` INT NOT NULL ,
 `ref` INT NOT NULL
-) CHARACTER SET utf8 COLLATE utf8_general_ci
+) ENGINE = INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
 END;
 
 mysql_query($sql);
 
 //正式开始
 
-//header('Content-type:zns/json');
+//header('Content-type:nzp/json');
 
 $act=$_GET['act'];
 $PAGE_SIZE=6;
@@ -98,11 +101,11 @@ switch($act)
 		while($row=mysql_fetch_array($res))
 		{
 			$arr=array();
-			array_push($arr, '"id":'.$row[0]);
-			array_push($arr, '"content":"'.$row[1].'"');
-			array_push($arr, '"time":'.$row[2]);
-			array_push($arr, '"acc":'.$row[3]);
-			array_push($arr, '"ref":'.$row[4]);
+			array_push($arr, 'id:'.$row[0]);
+			array_push($arr, 'content:"'.$row[1].'"');
+			array_push($arr, 'time:'.$row[2]);
+			array_push($arr, 'acc:'.$row[3]);
+			array_push($arr, 'ref:'.$row[4]);
 			
 			array_push($aResult, implode(',', $arr));
 		}
@@ -128,7 +131,7 @@ switch($act)
 		
 		mysql_query($sql);
 		
-		echo '{"error":0}';
+		echo '{error:0}';
 		break;
 	case 'ref':
 		$id=(int)$_GET['id'];
@@ -143,14 +146,18 @@ switch($act)
 		
 		mysql_query($sql);
 		
-		echo '{"error":0}';
+		echo '{error:0}';
 		break;
 	case 'del':
 		$id=(int)$_GET['id'];
-		$sql="DELETE FROM weibo WHERE ID={$id}";
-		//echo $sql;exit;
-		mysql_query($sql);
-		echo '{"error":0}';
+		
+		$res=mysql_query("DELETE FROM weibo WHERE ID={$id}");
+		
+		if($res){
+			echo '{error:0}';
+		}else{
+			echo '{error:1}';
+		}
 		break;
 }
 ?>

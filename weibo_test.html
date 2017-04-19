@@ -44,10 +44,12 @@
                                page:n
                            }
                        }).then(function (res) {
-                           console.log(res)
+                           var arr=eval('('+res.data+')');
+                           for(var i=0; i<arr.length; i++){
+                               this.myData.push(arr[i])
+                           }
                        })
                    }
-
                },
                ready:function () {
                    this.getPageDate(1)
