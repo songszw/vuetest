@@ -3,16 +3,15 @@
 <head>
 <meta charset="utf-8">
 <title>智能课堂 —— 微博ajax接口测试 - www.zhinengshe.com</title>
-<link href="style/weibo.css" rel="stylesheet" type="text/css" />
+<link href="style/weibo.css" rel="stylesheet" type="text/css"/>
     <script src="vue.js"></script>
     <script src="vue-resource.js"></script>
-
 </head>
 <body>
 <div class="znsArea" id="box">
 <!--留言-->
      <div class="takeComment">
-        <textarea name="textarea" class="takeTextField" id="tijiaoText" v-model="t1"></textarea>
+        <textarea name="textarea" class="takeTextField" id="tijiaoText" v-model="t1" @keydown.enter.prevent="enterDown()"></textarea>
         <div class="takeSbmComment">
             <input type="button" class="inputs" value="" @click="addMsg()"/>
             <span>(可按 Enter 回复)</span>
@@ -27,17 +26,15 @@
                 <p class="operation">
                     <span class="replyTime">{{item.time}}</span>
                     <span class="handle">
-                    	<a href="javascript:;" class="top" @click="accOnce()">{{item.acc}}</a>
-                        <a href="javascript:;" class="down_icon">{{item.ref}}</a>
-                        <a href="javascript:;" class="cut">删除</a>
+                    	<a href="javascript:;" class="top" @click="accOnce(item.id)">{{item.acc}}</a>
+                        <a href="javascript:;" class="down_icon" @click="refOnce(item.id)">{{item.ref}}</a>
+                        <a href="javascript:;" class="cut" @click="delOnce(item.id)">删除</a>
                     </span>
                 </p>
             </div>
         </div>
-        <div class="page">
-        	<a href="javascript:;" class="active">1</a>
-        	<a href="javascript:;">2</a>
-        	<a href="javascript:;">3</a>
+        <div class="page" >
+        	<a href="javascript:;" v-for="item in pages"  @click="changePages(item)">{{item+1}}</a>
         </div>
     </div>
 </div>
@@ -48,8 +45,7 @@
         data:{
             t1:"",
             myData:[],
-            nowIndex:-1
-
+            pages:0
         },
         methods:{
             addMsg:function () {
@@ -67,7 +63,13 @@
                         time:msg.time,
                         acc:0,
                         ref:0
-                    })
+                    });
+                    if(this.myData.length>6){
+                        this.myData.pop();
+                        this.getPages();
+
+                    };
+                    this.t1='';
 
                 })
             },
@@ -75,8 +77,6 @@
                 this.$http({
                     url:URL,
                     data:{
-//                        weibo.php?act=get&page=1		获取一页数据
-//                    返回：[{id: ID, content: "内容", time: 时间戳, acc: 顶次数, ref: 踩次数}, {...}, ...]
                         act:'get',
                         page:n
                     }
@@ -88,24 +88,104 @@
                 });
             },
             accOnce:function (id) {
-
                 this.$http({
-//                    weibo.php?act=acc&id=num			顶某一条数据
-//                返回：{error:0}
                     url:URL,
                     data:{
                         act:'acc',
                         id:id
                     }
                 }).then(function (res) {
-                    console.log(res)
+                    this.myData.forEach(function (a) {
+                        if(a.id==id){
+                            a.acc++;
+                        }
+                    })
+                })
+            },
+            refOnce:function (id) {
+                this.$http({
+                    url:URL,
+                    data:{
+                        act:'ref',
+                        id:id
+                    }
+                }).then(function (res) {
+                    this.myData.forEach(function (a) {
+                        if(a.id==id){
+                            a.ref++;
+                        }
+                    })
+                })
+            },
+            delOnce:function (id) {
+                this.$http({
+                    url:URL,
+                    data:{
+                        act:"del",
+                        id:id
+                    }
+                }).then(function (res) {
+                    this.getOnePage(1)
+                });
+            },
+            getPages:function () {
+                this.$http({
+                    url:URL,
+                    data:{
+                        act:"get_page_count"
+                    }
+                }).then(function (res) {
+                    this.pages=res.data.count;
+                    console.log(this.pages)
+                });
+            },
+            enterDown:function () {
+                this.$http({
+                    url:URL,
+                    data:{
+                        act:'add',
+                        content:this.t1
+                    }
+                }).then(function (res) {
+                    var msg = res.data;
+                    this.myData.unshift({
+                        content:this.t1,
+                        id:msg.id,
+                        time:msg.time,
+                        acc:0,
+                        ref:0
+                    });
+                    if(this.myData.length>6){
+                        this.myData.pop();
+                        this.getPages();
+
+                    };
+                    this.t1='';
+
+                });
+            },
+            changePages:function (item) {
+                this.$http({
+                    url:URL,
+                    data:{
+//                        weibo.php?act=get&page=1		获取一页数据
+//                    返回：[{id: ID, content: "内容", time: 时间戳, acc: 顶次数, ref: 踩次数}, {...}, ...]
+                        act:"get",
+                        page:(item+1)
+                    }
+                }).then(function (res) {
+                    this.myData=eval('('+res.data+')');
                 })
             }
         },
         ready:function () {
-            this.getOnePage(1)
+            this.getOnePage(1);
+            this.getPages();
         }
     });
 </script>
 </body>
 </html>
+
+<!--weibo.php?act=get&page=1		获取一页数据-->
+<!--返回：[{id: ID, content: "内容", time: 时间戳, acc: 顶次数, ref: 踩次数}, {...}, ...]-->
