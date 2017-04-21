@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="bower_components/vue/dist/vue.js"></script>
+    <script src="bower_components/vue-router/dist/vue-router.js"></script>
+    <title>Document</title>
+</head>
+<body>
+<div id="box">
+    <ul>
+        <li><a v-link="{path:'/home'}">主页</a></li>
+        <li><a v-link="{path:'/news'}">新闻</a></li>
+    </ul>
+    <div>
+        <router-view></router-view>
+    </div>
+</div>
+<script>
+    var App=Vue.extend();
+    var Homes = Vue.extend({
+        template:"<h3>我是主页</h3>"
+    });
+    var News = Vue.extend({
+        template:"<h3>我是新闻</h3>"
+    });
+    var router=new VueRouter();
+    router.map({
+        'home':{
+            component:Homes
+        },
+        'news':{
+            component:News
+        }
+    })
+    router.start(App,'#box');
+    router.redirect({
+        '/':'/news'
+    })
+</script>
+</body>
+</html>
